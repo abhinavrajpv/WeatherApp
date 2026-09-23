@@ -30,6 +30,18 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of("error", ex.getMessage()));
 	}
 
+	@ExceptionHandler(UserAlreadyExistsException.class)
+	public ResponseEntity<?> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
+	}
+
+	@ExceptionHandler(RuntimeException.class)
+	public ResponseEntity<?> handleRuntimeException(RuntimeException ex) {
+
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", ex.getMessage()));
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException ex) {
 
@@ -39,5 +51,17 @@ public class GlobalExceptionHandler {
 				.forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+	}
+
+	@ExceptionHandler(InvalidCredentialsException.class)
+	public ResponseEntity<?> handleInvalidCredentialsException(InvalidCredentialsException ex) {
+
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", ex.getMessage()));
+	}
+
+	@ExceptionHandler(InvalidRefreshTokenException.class)
+	public ResponseEntity<?> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
+
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", ex.getMessage()));
 	}
 }
