@@ -13,7 +13,10 @@ import com.example.demo.exception.CityNotFoundException;
 import com.example.demo.exception.WeatherProviderException;
 import com.example.demo.repository.CityRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class CityService {
 	private final CityRepository cityRepository;
 	private final AuditService auditService;
@@ -28,7 +31,14 @@ public class CityService {
 	@Transactional
 	public City addCity(CityRequestDto request) {
 
+		String cityName = request.getCity().trim();
+		String state = request.getState().trim();
+		String countryCode = request.getCountryCode().trim().toUpperCase();
+
+		log.info("Adding city: {}, {}, {}", cityName, state, countryCode);
+
 		if (cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase(request.getCity(), request.getState())) {
+			log.warn("City already exists: {}", cityName);
 			throw new CityAlreadyExistsException("City ALready Exists!!!");
 		}
 
@@ -46,6 +56,7 @@ public class CityService {
 		}
 
 		if (selectedLocation == null) {
+			  log.warn("State mismatch for city: {}", cityName);
 
 			throw new WeatherProviderException("Could not find city with the given state");
 		}
@@ -64,6 +75,8 @@ public class CityService {
 
 		City savedCity = cityRepository.save(city);
 
+	    log.info("City added successfully: {}", savedCity.getCity());
+
 		auditService.record("SYSTEM", "Added city: " + savedCity.getCity());
 
 		return savedCity;
@@ -77,8 +90,11 @@ public class CityService {
 
 	@Transactional
 	public void deleteCity(Long id) {
+		 log.info("Deleting city with ID: {}", id);
 		City city = cityRepository.findById(id).orElseThrow(() -> new CityNotFoundException("City not found"));
 		cityRepository.delete(city);
+
+	    log.info("City deleted successfully: {}", city.getCity());
 		auditService.record("SYSTEM", "Deleted city: " + city.getCity());
 
 	}

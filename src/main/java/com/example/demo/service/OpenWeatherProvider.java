@@ -13,9 +13,11 @@ import com.example.demo.dto.WeatherResponseDto;
 import com.example.demo.exception.WeatherProviderException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OpenWeatherProvider implements WeatherProvider {
 
 	private final RestClient restClient;
@@ -25,6 +27,7 @@ public class OpenWeatherProvider implements WeatherProvider {
 
 	@Override
 	public List<CityResponseDto> resolveLocation(String city, String countryCode) {
+		log.info("Calling weather provider for city: {}, {}", city, countryCode);
 
 		try {
 
@@ -41,10 +44,12 @@ public class OpenWeatherProvider implements WeatherProvider {
 			return Arrays.asList(response);
 
 		} catch (WeatherProviderException e) {
+			log.error("Weather provider failed while finding city: {}", city, e);
 
 			throw e;
 
 		} catch (Exception e) {
+			log.error("Weather provider failed while finding city: {}", city, e);
 
 			throw new WeatherProviderException("Failed to retrieve location", e);
 		}
@@ -52,6 +57,8 @@ public class OpenWeatherProvider implements WeatherProvider {
 
 	@Override
 	public WeatherResponseDto getWeather(Double latitude, Double longitude) {
+
+		log.info("Calling weather API for coordinates: {}, {}", latitude, longitude);
 
 		try {
 
@@ -82,10 +89,12 @@ public class OpenWeatherProvider implements WeatherProvider {
 			return weather;
 
 		} catch (WeatherProviderException e) {
+			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude, e);
 
 			throw e;
 
 		} catch (Exception e) {
+			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude, e);
 
 			throw new WeatherProviderException("Failed to retrieve weather data", e);
 		}

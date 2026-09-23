@@ -14,8 +14,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtService jwtService;
@@ -65,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			}
 
 		} catch (JwtException e) {
-			System.out.println("JWT error:-" + e.getMessage());
+			log.warn("Invalid JWT received: {}", e.getMessage());
 		}
 
 		filterChain.doFilter(request, response);
