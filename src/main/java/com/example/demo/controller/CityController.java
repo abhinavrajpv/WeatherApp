@@ -15,6 +15,8 @@ import com.example.demo.dto.CityRequestDto;
 import com.example.demo.entity.City;
 import com.example.demo.service.CityService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/cities")
 public class CityController {
@@ -26,7 +28,7 @@ public class CityController {
 	}
 
 	@PostMapping
-	public ResponseEntity<City> addCity(@RequestBody CityRequestDto request) {
+	public ResponseEntity<City> addCity(@Valid @RequestBody CityRequestDto request) {
 
 		City city = cityService.addCity(request);
 		return ResponseEntity.ok(city);
