@@ -8,7 +8,7 @@ import com.example.demo.entity.City;
 
 public interface CityRepository extends JpaRepository<City, Long> {
 
-	Optional<City> findByCityAndState(String city, String state);
+	Optional<City> findByCityIgnoreCaseAndStateIgnoreCase(String city, String state);
 
-	boolean existsByCityAndState(String city, String state);
+	boolean existsByCityIgnoreCaseAndStateIgnoreCase(String city, String state);
 }

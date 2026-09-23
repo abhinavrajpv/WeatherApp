@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.AuthResponseDto;
 import com.example.demo.dto.LoginRequestDto;
@@ -22,6 +23,7 @@ import com.example.demo.security.JwtService;
 
 @Service
 public class AuthService {
+	private final AuditService auditService;
 	private final AuthenticationManager authenticationManager;
 	private final JwtService jwtService;
 	private final UserDetailsService userDetailsService;
@@ -29,14 +31,16 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 
 	public AuthService(AuthenticationManager authenticationManager, JwtService jwtService,
-			UserDetailsService userDetailsService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+			UserDetailsService userDetailsService, UserRepository userRepository, PasswordEncoder passwordEncoder, AuditService auditService) {
 		this.authenticationManager = authenticationManager;
 		this.jwtService = jwtService;
 		this.userDetailsService = userDetailsService;
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.auditService = auditService;
 	}
 
+	@Transactional
 	public void register(RegisterRequestDto request) {
 
 		if (userRepository.existsByUsername(request.getUsername())) {
@@ -50,6 +54,10 @@ public class AuthService {
 		user.setRole(request.getRole().toUpperCase());
 
 		userRepository.save(user);
+		
+		auditService.record(request.getUsername(), "New User Registered");
+		
+		
 
 	}
 

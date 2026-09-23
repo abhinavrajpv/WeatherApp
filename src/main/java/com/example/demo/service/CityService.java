@@ -28,7 +28,7 @@ public class CityService {
 	@Transactional
 	public City addCity(CityRequestDto request) {
 
-		if (cityRepository.existsByCityAndState(request.getCity(), request.getState())) {
+		if (cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase(request.getCity(), request.getState())) {
 			throw new CityAlreadyExistsException("City ALready Exists!!!");
 		}
 

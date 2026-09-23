@@ -28,7 +28,7 @@ public class WeatherService {
 	@Transactional
 	public WeatherResponseDto getWeather(WeatherRequestDto request) {
 
-		City city = cityRepository.findByCityAndState(request.getCity(), request.getState())
+		City city = cityRepository.findByCityIgnoreCaseAndStateIgnoreCase(request.getCity(), request.getState())
 				.orElseThrow(() -> new CityNotFoundException("City is not configured"));
 
 		WeatherResponseDto response = getWeatherFromProvider(city);
