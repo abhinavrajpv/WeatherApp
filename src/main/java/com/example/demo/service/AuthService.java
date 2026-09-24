@@ -21,6 +21,7 @@ import com.example.demo.exception.UserAlreadyExistsException;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtService;
 
+import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -34,7 +35,8 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 
 	public AuthService(AuthenticationManager authenticationManager, JwtService jwtService,
-			UserDetailsService userDetailsService, UserRepository userRepository, PasswordEncoder passwordEncoder, AuditService auditService) {
+			UserDetailsService userDetailsService, UserRepository userRepository, PasswordEncoder passwordEncoder,
+			AuditService auditService) {
 		this.authenticationManager = authenticationManager;
 		this.jwtService = jwtService;
 		this.userDetailsService = userDetailsService;
@@ -45,13 +47,11 @@ public class AuthService {
 
 	@Transactional
 	public void register(RegisterRequestDto request) {
-		
-		log.info("Registration attempt for username: {}",
-                request.getUsername());
+
+		log.info("Registration attempt for username: {}", request.getUsername());
 
 		if (userRepository.existsByUsername(request.getUsername())) {
-			 log.warn("Registration failed - username already exists: {}",
-	                    request.getUsername());
+			log.warn("Registration failed - username already exists: {}", request.getUsername());
 			throw new UserAlreadyExistsException("Username already exists");
 		}
 
@@ -63,20 +63,14 @@ public class AuthService {
 
 		userRepository.save(user);
 
-		log.info("User registered successfully: {}",
-                user.getUsername());
-		
+		log.info("User registered successfully: {}", user.getUsername());
+
 		auditService.record(request.getUsername(), "New User Registered");
-		
-		
-		
-		
 
 	}
 
 	public AuthResponseDto login(LoginRequestDto request) {
-		 log.info("Login attempt for username: {}",
-	                request.getUsername());
+		log.info("Login attempt for username: {}", request.getUsername());
 
 		try {
 			Authentication authentication = authenticationManager.authenticate(
@@ -87,48 +81,52 @@ public class AuthService {
 			String accessToken = jwtService.generateAccessToken(userDetails);
 
 			String refreshToken = jwtService.generateRefreshToken(userDetails);
-			
-			 log.info("Login successful for username: {}",
-	                    userDetails.getUsername());
+
+			log.info("Login successful for username: {}", userDetails.getUsername());
 
 			return new AuthResponseDto(accessToken, refreshToken);
 		} catch (AuthenticationException ex) {
 
-            log.warn("Login failed for username: {}",
-                    request.getUsername());
+			log.warn("Login failed for username: {}", request.getUsername());
 
 			throw new InvalidCredentialsException("Invalid username or password");
 		}
 	}
 
 	public AuthResponseDto refresh(RefreshRequestDto request) {
-		
-		  log.info("Refresh token request received");
-		String refreshToken = request.getRefreshToken();
 
-		String type = jwtService.extractTokenType(refreshToken);
+		log.info("Refresh token request received");
 
-		if (!"refresh".equals(type)) {
-			   log.warn("Invalid token type used for refresh");
+		try {
+			String refreshToken = request.getRefreshToken();
+
+			String type = jwtService.extractTokenType(refreshToken);
+
+			if (!"refresh".equals(type)) {
+				log.warn("Invalid token type used for refresh");
+				throw new InvalidRefreshTokenException("Invalid refresh token");
+			}
+
+			String username = jwtService.extractUsername(refreshToken);
+
+			UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+			if (!jwtService.isTokenValid(refreshToken, userDetails)) {
+				log.warn("Refresh token validation failed for username: {}", username);
+
+				throw new InvalidRefreshTokenException("Invalid refresh token");
+			}
+
+			String newAccessToken = jwtService.generateAccessToken(userDetails);
+			log.info("Access token refreshed successfully for username: {}", username);
+
+			return new AuthResponseDto(newAccessToken, refreshToken);
+		} catch (JwtException ex) {
+
+			log.warn("Invalid refresh token: {}", ex.getMessage());
+
 			throw new InvalidRefreshTokenException("Invalid refresh token");
 		}
-
-		String username = jwtService.extractUsername(refreshToken);
-
-		UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-		if (!jwtService.isTokenValid(refreshToken, userDetails)) {
-			 log.warn("Refresh token validation failed for username: {}",
-                     username);
-
-			throw new InvalidRefreshTokenException("Invalid refresh token");
-		}
-
-		String newAccessToken = jwtService.generateAccessToken(userDetails);
-		log.info("Access token refreshed successfully for username: {}",
-                username);
-
-		return new AuthResponseDto(newAccessToken, refreshToken);
 
 	}
 

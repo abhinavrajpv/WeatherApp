@@ -44,12 +44,12 @@ public class OpenWeatherProvider implements WeatherProvider {
 			return Arrays.asList(response);
 
 		} catch (WeatherProviderException e) {
-			log.error("Weather provider failed while finding city: {}", city, e);
+			log.error("Weather provider failed while finding city: {}", city);
 
 			throw e;
 
 		} catch (Exception e) {
-			log.error("Weather provider failed while finding city: {}", city, e);
+			log.error("Weather provider failed while finding city: {}", city);
 
 			throw new WeatherProviderException("Failed to retrieve location", e);
 		}
@@ -89,12 +89,12 @@ public class OpenWeatherProvider implements WeatherProvider {
 			return weather;
 
 		} catch (WeatherProviderException e) {
-			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude, e);
+			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude);
 
 			throw e;
 
 		} catch (Exception e) {
-			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude, e);
+			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude);
 
 			throw new WeatherProviderException("Failed to retrieve weather data", e);
 		}

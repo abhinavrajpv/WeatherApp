@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +58,7 @@ public class CityService {
 		}
 
 		if (selectedLocation == null) {
-			  log.warn("State mismatch for city: {}", cityName);
+			log.warn("State mismatch for city: {}", cityName);
 
 			throw new WeatherProviderException("Could not find city with the given state");
 		}
@@ -75,9 +77,12 @@ public class CityService {
 
 		City savedCity = cityRepository.save(city);
 
-	    log.info("City added successfully: {}", savedCity.getCity());
+		log.info("City added successfully: {}", savedCity.getCity());
 
-		auditService.record("SYSTEM", "Added city: " + savedCity.getCity());
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String username = authentication.getName();
+
+		auditService.record(username, "Added city: " + savedCity.getCity());
 
 		return savedCity;
 
@@ -90,12 +95,15 @@ public class CityService {
 
 	@Transactional
 	public void deleteCity(Long id) {
-		 log.info("Deleting city with ID: {}", id);
+		log.info("Deleting city with ID: {}", id);
 		City city = cityRepository.findById(id).orElseThrow(() -> new CityNotFoundException("City not found"));
 		cityRepository.delete(city);
 
-	    log.info("City deleted successfully: {}", city.getCity());
-		auditService.record("SYSTEM", "Deleted city: " + city.getCity());
+		log.info("City deleted successfully: {}", city.getCity());
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String username = authentication.getName();
+		auditService.record(username, "Deleted city: " + city.getCity());
 
 	}
 

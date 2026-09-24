@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +41,10 @@ public class WeatherService {
 
 		log.info("Weather fetched successfully for city: {}", city.getCity());
 
-		auditService.record("SYSTEM", "Viewed weather for: " + city.getCity());
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String username = authentication.getName();
+
+		auditService.record(username, "Viewed weather for: " + city.getCity());
 
 		return response;
 	}
