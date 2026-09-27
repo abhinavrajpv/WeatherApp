@@ -3,6 +3,7 @@ package com.example.demo.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<?> handleRuntimeException(RuntimeException ex) {
-		log.error("Unexpected application error: {}", ex.getMessage(), ex);
+		log.error("Unexpected application error: {}", ex.getMessage());
 
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", ex.getMessage()));
 	}
@@ -69,13 +70,17 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", ex.getMessage()));
 	}
-	
-	@ExceptionHandler(DataIntegrityViolationException.class)
-	public ResponseEntity<?> handleDataIntegrityViolation(
-	        DataIntegrityViolationException ex) {
 
-	    return ResponseEntity
-	            .status(HttpStatus.CONFLICT)
-	            .body(Map.of("error", "City already exists"));
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<?> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "City already exists"));
+	}
+
+	@ExceptionHandler(DataAccessException.class)
+	public ResponseEntity<String> handleDatabaseError(DataAccessException ex) {
+
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body("A database error occurred. Please try again later.");
 	}
 }

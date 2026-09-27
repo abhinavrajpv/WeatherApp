@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -10,27 +10,26 @@ import com.example.demo.entity.City;
 @Service
 public class WeatherCacheService {
 
-    private final WeatherProvider weatherProvider;
+	private final WeatherProvider weatherProvider;
 
-    public WeatherCacheService(WeatherProvider weatherProvider) {
-        this.weatherProvider = weatherProvider;
-    }
+	public WeatherCacheService(WeatherProvider weatherProvider) {
+		this.weatherProvider = weatherProvider;
+	}
 
-    @Cacheable(
-        value = "weather",
-        key = "#city.latitude + ',' + #city.longitude"
-    )
-    public WeatherResponseDto getWeatherFromProvider(City city) {
+	@Cacheable(value = "weather", key = "#city.latitude + ',' + #city.longitude")
+	public WeatherResponseDto getWeatherFromProvider(City city) {
 
-        WeatherResponseDto response =
-                weatherProvider.getWeather(
-                        city.getLatitude(),
-                        city.getLongitude());
+		WeatherResponseDto response = weatherProvider.getWeather(city.getLatitude(), city.getLongitude());
 
-        response.setCity(city.getCity());
-        response.setState(city.getState());
-        response.setCountryCode(city.getCountryCode());
+		response.setCity(city.getCity());
+		response.setState(city.getState());
+		response.setCountryCode(city.getCountryCode());
 
-        return response;
-    }
+		return response;
+	}
+
+	@CacheEvict(value = "weather", key = "#latitude + ',' + #longitude")
+	public void evictWeatherCache(double latitude, double longitude) {
+
+	}
 }

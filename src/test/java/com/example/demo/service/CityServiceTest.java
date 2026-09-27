@@ -3,12 +3,14 @@ package com.example.demo.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +42,9 @@ class CityServiceTest {
 	@Mock
 	private WeatherProvider weatherProvider;
 
+	@Mock
+	private WeatherCacheService weatherCacheService;
+
 	@InjectMocks
 	private CityService cityService;
 
@@ -68,9 +73,9 @@ class CityServiceTest {
 
 		CityResponseDto location = new CityResponseDto();
 
-		location.setCity("Bengaluru");
+		location.setName("Bengaluru");
 		location.setState("Karnataka");
-		location.setCountryCode("IN");
+		location.setCountry("IN");
 		location.setLatitude(12.97);
 		location.setLongitude(77.59);
 
@@ -135,9 +140,9 @@ class CityServiceTest {
 
 		CityResponseDto location = new CityResponseDto();
 
-		location.setCity("Bengaluru");
+		location.setName("Bengaluru");
 		location.setState("Karnataka");
-		location.setCountryCode("IN");
+		location.setCountry("IN");
 		location.setLatitude(12.97);
 		location.setLongitude(77.59);
 
@@ -181,12 +186,16 @@ class CityServiceTest {
 
 		city.setId(1L);
 		city.setCity("Bengaluru");
+		city.setLatitude(12.9716);
+		city.setLongitude(77.5946);
 
-		when(cityRepository.findById(1L)).thenReturn(java.util.Optional.of(city));
+		when(cityRepository.findById(1L)).thenReturn(Optional.of(city));
 
 		cityService.deleteCity(1L);
 
 		verify(cityRepository).delete(city);
+
+		verify(weatherCacheService).evictWeatherCache(city.getLatitude(), city.getLongitude());
 
 		verify(auditService).record("testuser", "Deleted city: Bengaluru");
 	}
@@ -194,10 +203,12 @@ class CityServiceTest {
 	@Test
 	void shouldThrowExceptionWhenDeletingNonExistingCity() {
 
-		when(cityRepository.findById(99L)).thenReturn(java.util.Optional.empty());
+		when(cityRepository.findById(99L)).thenReturn(Optional.empty());
 
 		assertThrows(CityNotFoundException.class, () -> cityService.deleteCity(99L));
 
 		verify(cityRepository, never()).delete(any(City.class));
+
+		verify(weatherCacheService, never()).evictWeatherCache(anyDouble(), anyDouble());
 	}
 }

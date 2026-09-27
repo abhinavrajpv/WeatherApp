@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CityResponseDto {
 
-	private String city;
+	private String name;
 	private String state;
-	private String countryCode;
+	private String country;
 
 	@JsonProperty("lat")
 	private Double latitude;

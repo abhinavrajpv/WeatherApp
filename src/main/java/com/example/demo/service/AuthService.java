@@ -84,7 +84,7 @@ public class AuthService {
 
 			log.info("Login successful for username: {}", userDetails.getUsername());
 
-			return new AuthResponseDto(accessToken, refreshToken);
+			return new AuthResponseDto(accessToken, refreshToken); 
 		} catch (AuthenticationException ex) {
 
 			log.warn("Login failed for username: {}", request.getUsername());

@@ -30,6 +30,5 @@ public class OpenWeatherWeatherResponseDto {
 
 		private String main;
 
-		private String description;
 	}
 }

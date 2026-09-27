@@ -24,12 +24,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.example.demo.dto.AuthResponseDto;
 import com.example.demo.dto.LoginRequestDto;
+import com.example.demo.dto.RefreshRequestDto;
 import com.example.demo.dto.RegisterRequestDto;
 import com.example.demo.entity.AppUser;
 import com.example.demo.exception.InvalidCredentialsException;
+import com.example.demo.exception.InvalidRefreshTokenException;
 import com.example.demo.exception.UserAlreadyExistsException;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtService;
+
+import io.jsonwebtoken.JwtException;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
@@ -122,5 +126,83 @@ public class AuthServiceTest {
 				.thenThrow(new BadCredentialsException("Invalid credentials"));
 
 		assertThrows(InvalidCredentialsException.class, () -> authService.login(request));
+	}
+
+	@Test
+	void shouldRefreshAccessTokenSuccessfully() {
+
+		RefreshRequestDto request = new RefreshRequestDto();
+		request.setRefreshToken("refresh-token");
+
+		UserDetails userDetails = User.withUsername("testuser").password("encodedPassword").roles("USER").build();
+
+		when(jwtService.extractTokenType("refresh-token")).thenReturn("refresh");
+
+		when(jwtService.extractUsername("refresh-token")).thenReturn("testuser");
+
+		when(userDetailsService.loadUserByUsername("testuser")).thenReturn(userDetails);
+
+		when(jwtService.isTokenValid("refresh-token", userDetails)).thenReturn(true);
+
+		when(jwtService.generateAccessToken(userDetails)).thenReturn("new-access-token");
+
+		AuthResponseDto result = authService.refresh(request);
+
+		assertEquals("new-access-token", result.getAccessToken());
+
+		assertEquals("refresh-token", result.getRefreshToken());
+
+		verify(jwtService).generateAccessToken(userDetails);
+	}
+
+	@Test
+	void shouldThrowExceptionWhenTokenTypeIsNotRefresh() {
+
+		RefreshRequestDto request = new RefreshRequestDto();
+		request.setRefreshToken("access-token");
+
+		when(jwtService.extractTokenType("access-token")).thenReturn("access");
+
+		assertThrows(InvalidRefreshTokenException.class, () -> authService.refresh(request));
+
+		verify(userDetailsService, never()).loadUserByUsername(any());
+
+		verify(jwtService, never()).generateAccessToken(any());
+	}
+
+	@Test
+	void shouldThrowExceptionWhenRefreshTokenIsInvalid() {
+
+		RefreshRequestDto request = new RefreshRequestDto();
+		request.setRefreshToken("refresh-token");
+
+		UserDetails userDetails = User.withUsername("testuser").password("encodedPassword").roles("USER").build();
+
+		when(jwtService.extractTokenType("refresh-token")).thenReturn("refresh");
+
+		when(jwtService.extractUsername("refresh-token")).thenReturn("testuser");
+
+		when(userDetailsService.loadUserByUsername("testuser")).thenReturn(userDetails);
+
+		when(jwtService.isTokenValid("refresh-token", userDetails)).thenReturn(false);
+
+		assertThrows(InvalidRefreshTokenException.class, () -> authService.refresh(request));
+
+		verify(jwtService, never()).generateAccessToken(any());
+	}
+
+	@Test
+	void shouldThrowExceptionWhenRefreshTokenCausesJwtException() {
+
+		RefreshRequestDto request = new RefreshRequestDto();
+		request.setRefreshToken("invalid-token");
+
+		when(jwtService.extractTokenType("invalid-token")).thenThrow(new JwtException("Invalid token"));
+
+		assertThrows(InvalidRefreshTokenException.class, () -> authService.refresh(request));
+
+		verify(userDetailsService, never()).loadUserByUsername(any());
+
+		verify(jwtService, never()).generateAccessToken(any());
 	}
 }

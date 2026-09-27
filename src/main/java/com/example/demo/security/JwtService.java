@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +16,11 @@ public class JwtService {
 
 	private final SecretKey secretKey = Keys.hmacShaKeyFor("my-super-secret-key-my-super-secret-key-12345".getBytes());
 
-	private final long accessTokenExpiration = 60 * 60 * 1000L;
+	@Value("${jwt.access-token-expiration}")
+	private long accessTokenExpiration;
 
-	private final long refreshTokenExpiration = 7L * 24 * 60 * 60 * 1000;
+	@Value("${jwt.refresh-token-expiration}")
+	private long refreshTokenExpiration;
 
 	public String generateAccessToken(UserDetails userDetails) {
 

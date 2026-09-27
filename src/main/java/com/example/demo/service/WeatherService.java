@@ -3,7 +3,6 @@ package com.example.demo.service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.WeatherRequestDto;
 import com.example.demo.dto.WeatherResponseDto;
@@ -30,11 +29,12 @@ public class WeatherService {
 		this.auditService = auditService;
 	}
 
-	@Transactional
 	public WeatherResponseDto getWeather(WeatherRequestDto request) {
 
 		log.info("Weather request for city: {}", request.getCity().trim());
-		City city = cityRepository.findByCityIgnoreCaseAndStateIgnoreCase(request.getCity(), request.getState())
+		String cityName = request.getCity().trim();
+		String stateName = request.getState().trim();
+		City city = cityRepository.findByCityIgnoreCaseAndStateIgnoreCase(cityName, stateName)
 				.orElseThrow(() -> new CityNotFoundException("City is not configured"));
 
 		WeatherResponseDto response = weatherCacheService.getWeatherFromProvider(city);

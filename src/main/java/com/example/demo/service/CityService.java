@@ -23,11 +23,14 @@ public class CityService {
 	private final CityRepository cityRepository;
 	private final AuditService auditService;
 	private final WeatherProvider weatherProvider;
+	private final WeatherCacheService weatherCacheService;
 
-	public CityService(CityRepository cityRepository, AuditService auditService, WeatherProvider weatherProvider) {
+	public CityService(CityRepository cityRepository, AuditService auditService, WeatherProvider weatherProvider,
+			WeatherCacheService weatherCacheService) {
 		this.cityRepository = cityRepository;
 		this.auditService = auditService;
 		this.weatherProvider = weatherProvider;
+		this.weatherCacheService = weatherCacheService;
 	}
 
 	@Transactional
@@ -62,14 +65,15 @@ public class CityService {
 
 			throw new WeatherProviderException("Could not find city with the given state");
 		}
+		log.info("selected city:" + selectedLocation);
 
 		City city = new City();
 
-		city.setCity(request.getCity());
+		city.setCity(selectedLocation.getName());
 
-		city.setState(request.getState());
+		city.setState(selectedLocation.getState());
 
-		city.setCountryCode(request.getCountryCode());
+		city.setCountryCode(selectedLocation.getCountry());
 
 		city.setLatitude(selectedLocation.getLatitude());
 
@@ -100,6 +104,8 @@ public class CityService {
 		cityRepository.delete(city);
 
 		log.info("City deleted successfully: {}", city.getCity());
+
+		weatherCacheService.evictWeatherCache(city.getLatitude(), city.getLongitude());
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String username = authentication.getName();

@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import com.example.demo.dto.CityResponseDto;
 import com.example.demo.dto.OpenWeatherWeatherResponseDto;
@@ -48,6 +50,16 @@ public class OpenWeatherProvider implements WeatherProvider {
 
 			throw e;
 
+		} catch (RestClientResponseException e) {
+
+			log.error("Weather provider returned HTTP status: {}", e.getStatusCode());
+
+			throw new WeatherProviderException("Weather provider returned an error", e);
+		} catch (RestClientException e) {
+
+			log.error("Failed to connect to weather provider");
+
+			throw new WeatherProviderException("Weather provider is unavailable", e);
 		} catch (Exception e) {
 			log.error("Weather provider failed while finding city: {}", city);
 
@@ -93,6 +105,17 @@ public class OpenWeatherProvider implements WeatherProvider {
 
 			throw e;
 
+		} catch (RestClientResponseException e) {
+
+			log.error("Weather provider returned HTTP status: {}", e.getStatusCode());
+
+			throw new WeatherProviderException("Weather provider returned an error", e);
+
+		} catch (RestClientException e) {
+
+			log.error("Failed to connect to weather provider");
+
+			throw new WeatherProviderException("Weather provider is unavailable", e);
 		} catch (Exception e) {
 			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude);
 
