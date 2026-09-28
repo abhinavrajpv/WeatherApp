@@ -13,10 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -45,7 +43,7 @@ public class OpenWeatherProviderTest {
 
 		provider = new OpenWeatherProvider(restClient);
 
-		ReflectionTestUtils.setField(provider, "apiKey", "test-api-key");
+		//ReflectionTestUtils.setField(provider, "apiKey", "test-api-key");
 
 		when(restClient.get()).thenReturn(requestSpec);
 
@@ -105,19 +103,26 @@ public class OpenWeatherProviderTest {
 	@Test
 	void shouldGetWeatherSuccessfully() {
 
-		OpenWeatherWeatherResponseDto response = Mockito.mock(OpenWeatherWeatherResponseDto.class,
-				Mockito.RETURNS_DEEP_STUBS);
+		OpenWeatherWeatherResponseDto response = new OpenWeatherWeatherResponseDto();
 
-		when(response.getMain().getTemp()).thenReturn(25.0);
-		when(response.getMain().getHumidity()).thenReturn(60);
-		when(response.getWind().getSpeed()).thenReturn(3.5);
+		OpenWeatherWeatherResponseDto.MainData main = new OpenWeatherWeatherResponseDto.MainData();
+
+		main.setTemp(25.0);
+		main.setHumidity(60);
+
+		response.setMain(main);
+
+		OpenWeatherWeatherResponseDto.WindData wind = new OpenWeatherWeatherResponseDto.WindData();
+
+		wind.setSpeed(3.5);
+
+		response.setWind(wind);
 
 		when(responseSpec.body(OpenWeatherWeatherResponseDto.class)).thenReturn(response);
 
 		WeatherResponseDto result = provider.getWeather(12.9716, 77.5946);
 
 		assertNotNull(result);
-
 		assertEquals(25.0, result.getTemperature());
 		assertEquals(60, result.getHumidity());
 		assertEquals(3.5, result.getWindSpeed());
