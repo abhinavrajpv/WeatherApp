@@ -9,13 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class CityRequestDto {
-
 	@NotBlank(message = "City is required!!")
 	private String city;
-
 	@NotBlank(message = "State is required!!")
 	private String state;
-
 	@NotBlank(message = "Country code is required!!")
 	@Size(min = 2, max = 2, message = "Country code must contain exactly 2 characters!!")
 	@Pattern(regexp = "^[A-Za-z]{2}$", message = "Country code must contain only letters and exactly 2 letters!!")

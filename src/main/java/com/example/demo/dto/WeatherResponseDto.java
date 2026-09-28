@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WeatherResponseDto {
-
 	private String city;
 	private String state;
 	private String countryCode;
@@ -16,5 +15,4 @@ public class WeatherResponseDto {
 	private Integer humidity;
 	private Double windSpeed;
 	private String weatherCondition;
-
 }

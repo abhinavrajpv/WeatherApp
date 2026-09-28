@@ -16,20 +16,16 @@ import com.example.demo.entity.City;
 import com.example.demo.service.CityService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/cities")
+@RequiredArgsConstructor
 public class CityController {
-
 	private final CityService cityService;
-
-	public CityController(CityService cityService) {
-		this.cityService = cityService;
-	}
 
 	@PostMapping
 	public ResponseEntity<City> addCity(@Valid @RequestBody CityRequestDto request) {
-
 		City city = cityService.addCity(request);
 		return ResponseEntity.ok(city);
 	}
@@ -41,9 +37,7 @@ public class CityController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> deleteCity(@PathVariable Long id) {
-
 		cityService.deleteCity(id);
-
 		return ResponseEntity.ok("City Deleted Successfully!!");
 	}
 

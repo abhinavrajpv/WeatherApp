@@ -10,24 +10,18 @@ import org.springframework.web.client.RestClient;
 
 @Configuration
 public class RestClientConfig {
-
 	@Value("${weather.api.base-url}")
 	private String baseUrl;
-
 	@Value("${weather.api.connect-timeout}")
 	private Duration connectTimeout;
-
 	@Value("${weather.api.read-timeout}")
 	private Duration readTimeout;
 
 	@Bean
-	public RestClient restClient() {
-
+	RestClient restClient() {
 		SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-
 		factory.setConnectTimeout(connectTimeout);
 		factory.setReadTimeout(readTimeout);
-
 		return RestClient.builder().baseUrl(baseUrl).requestFactory(factory).build();
 	}
 }

@@ -10,14 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CityResponseDto {
-
 	private String name;
 	private String state;
 	private String country;
-
 	@JsonProperty("lat")
 	private Double latitude;
-
 	@JsonProperty("lon")
 	private Double longitude;
 }

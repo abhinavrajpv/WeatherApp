@@ -13,14 +13,10 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 @Configuration
 @EnableCaching
 public class CacheConfig {
-
 	@Bean
-	public CacheManager cacheManager() {
-
+	CacheManager cacheManager() {
 		CaffeineCacheManager cacheManager = new CaffeineCacheManager("weather");
-
 		cacheManager.setCaffeine(Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(10)).maximumSize(100));
-
 		return cacheManager;
 	}
 }

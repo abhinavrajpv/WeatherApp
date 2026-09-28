@@ -32,183 +32,125 @@ import com.example.demo.repository.CityRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CityServiceTest {
-
 	@Mock
 	private CityRepository cityRepository;
-
 	@Mock
 	private AuditService auditService;
-
 	@Mock
 	private WeatherProvider weatherProvider;
-
 	@Mock
 	private WeatherCacheService weatherCacheService;
-
+	@Mock
+	private CityPersistenceService cityPersistenceService;
 	@InjectMocks
 	private CityService cityService;
 
 	@BeforeEach
 	void setUp() {
-
 		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("testuser", null);
-
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}
 
 	@AfterEach
 	void cleanUp() {
-
 		SecurityContextHolder.clearContext();
 	}
 
 	@Test
 	void shouldAddCitySuccessfully() {
-
 		CityRequestDto request = new CityRequestDto();
-
 		request.setCity("Bengaluru");
 		request.setState("Karnataka");
 		request.setCountryCode("IN");
-
 		CityResponseDto location = new CityResponseDto();
-
 		location.setName("Bengaluru");
 		location.setState("Karnataka");
 		location.setCountry("IN");
 		location.setLatitude(12.97);
 		location.setLongitude(77.59);
-
 		City savedCity = new City();
-
 		savedCity.setId(1L);
 		savedCity.setCity("Bengaluru");
 		savedCity.setState("Karnataka");
 		savedCity.setCountryCode("IN");
 		savedCity.setLatitude(12.97);
 		savedCity.setLongitude(77.59);
-
 		when(cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase("Bengaluru", "Karnataka")).thenReturn(false);
-
 		when(weatherProvider.resolveLocation("Bengaluru", "IN")).thenReturn(List.of(location));
-
-		when(cityRepository.save(any(City.class))).thenReturn(savedCity);
-
+		when(cityPersistenceService.saveCityAndAudit(any(CityResponseDto.class), anyString())).thenReturn(savedCity);
 		City result = cityService.addCity(request);
-
 		assertEquals("Bengaluru", result.getCity());
-
 		assertEquals("Karnataka", result.getState());
-
 		assertEquals("IN", result.getCountryCode());
-
 		assertEquals(12.97, result.getLatitude());
-
 		assertEquals(77.59, result.getLongitude());
-
-		verify(cityRepository).save(any(City.class));
-
-		verify(auditService).record("testuser", "Added city: Bengaluru");
+		verify(cityPersistenceService).saveCityAndAudit(location, "IN");
 	}
 
 	@Test
 	void shouldThrowExceptionWhenCityAlreadyExists() {
-
 		CityRequestDto request = new CityRequestDto();
-
 		request.setCity("Bengaluru");
 		request.setState("Karnataka");
 		request.setCountryCode("IN");
-
 		when(cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase("Bengaluru", "Karnataka")).thenReturn(true);
-
 		assertThrows(CityAlreadyExistsException.class, () -> cityService.addCity(request));
-
-		verify(cityRepository, never()).save(any(City.class));
-
 		verify(weatherProvider, never()).resolveLocation(anyString(), anyString());
+		verify(cityPersistenceService, never()).saveCityAndAudit(any(CityResponseDto.class), anyString());
 	}
 
 	@Test
 	void shouldThrowExceptionWhenStateDoesNotMatch() {
-
 		CityRequestDto request = new CityRequestDto();
-
 		request.setCity("Bengaluru");
 		request.setState("Kerala");
 		request.setCountryCode("IN");
-
 		CityResponseDto location = new CityResponseDto();
-
 		location.setName("Bengaluru");
 		location.setState("Karnataka");
 		location.setCountry("IN");
 		location.setLatitude(12.97);
 		location.setLongitude(77.59);
-
 		when(cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase("Bengaluru", "Kerala")).thenReturn(false);
-
 		when(weatherProvider.resolveLocation("Bengaluru", "IN")).thenReturn(List.of(location));
-
 		assertThrows(WeatherProviderException.class, () -> cityService.addCity(request));
-
-		verify(cityRepository, never()).save(any(City.class));
+		verify(cityPersistenceService, never()).saveCityAndAudit(any(CityResponseDto.class), anyString());
 	}
 
 	@Test
 	void shouldReturnAllCities() {
-
 		City city1 = new City();
-
 		city1.setId(1L);
 		city1.setCity("Bengaluru");
-
 		City city2 = new City();
-
 		city2.setId(2L);
 		city2.setCity("Chennai");
-
 		when(cityRepository.findAll()).thenReturn(List.of(city1, city2));
-
 		List<City> result = cityService.getCities();
-
 		assertEquals(2, result.size());
-
 		assertEquals("Bengaluru", result.get(0).getCity());
-
 		assertEquals("Chennai", result.get(1).getCity());
 	}
 
 	@Test
 	void shouldDeleteCitySuccessfully() {
-
 		City city = new City();
-
 		city.setId(1L);
 		city.setCity("Bengaluru");
 		city.setLatitude(12.9716);
 		city.setLongitude(77.5946);
-
 		when(cityRepository.findById(1L)).thenReturn(Optional.of(city));
-
 		cityService.deleteCity(1L);
-
 		verify(cityRepository).delete(city);
-
 		verify(weatherCacheService).evictWeatherCache(city.getLatitude(), city.getLongitude());
-
 		verify(auditService).record("testuser", "Deleted city: Bengaluru");
 	}
 
 	@Test
 	void shouldThrowExceptionWhenDeletingNonExistingCity() {
-
 		when(cityRepository.findById(99L)).thenReturn(Optional.empty());
-
 		assertThrows(CityNotFoundException.class, () -> cityService.deleteCity(99L));
-
 		verify(cityRepository, never()).delete(any(City.class));
-
 		verify(weatherCacheService, never()).evictWeatherCache(anyDouble(), anyDouble());
 	}
 }

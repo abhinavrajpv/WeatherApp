@@ -17,13 +17,10 @@ import com.example.demo.entity.City;
 
 @ExtendWith(MockitoExtension.class)
 public class WeatherCacheServiceTest {
-
 	@Mock
 	private WeatherProvider weatherProvider;
-
 	@InjectMocks
 	private WeatherCacheService weatherCacheService;
-
 	private City city;
 	private WeatherResponseDto weatherResponse;
 
@@ -35,29 +32,22 @@ public class WeatherCacheServiceTest {
 		city.setCity("Bengaluru");
 		city.setState("Karnataka");
 		city.setCountryCode("IN");
-
 		weatherResponse = new WeatherResponseDto();
 	}
 
 	@Test
 	void getWeatherFromProvider_shouldReturnWeatherAndSetCityDetails() {
-
 		when(weatherProvider.getWeather(12.97, 77.59)).thenReturn(weatherResponse);
-
 		WeatherResponseDto result = weatherCacheService.getWeatherFromProvider(city);
-
 		assertSame(weatherResponse, result);
-
 		assertEquals("Bengaluru", result.getCity());
 		assertEquals("Karnataka", result.getState());
 		assertEquals("IN", result.getCountryCode());
-
 		verify(weatherProvider).getWeather(12.97, 77.59);
 	}
-	
+
 	@Test
 	void evictWeatherCache_shouldExecuteSuccessfully() {
-
-	    weatherCacheService.evictWeatherCache(12.97, 77.59);
+		weatherCacheService.evictWeatherCache(12.97, 77.59);
 	}
 }

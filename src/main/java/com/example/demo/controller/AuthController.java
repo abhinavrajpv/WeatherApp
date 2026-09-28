@@ -13,22 +13,18 @@ import com.example.demo.dto.RegisterRequestDto;
 import com.example.demo.service.AuthService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
-
 	private final AuthService authService;
-
-	public AuthController(AuthService authService) {
-		this.authService = authService;
-	}
 
 	@PostMapping("/register")
 	public ResponseEntity<String> register(@Valid @RequestBody RegisterRequestDto request) {
 		authService.register(request);
 		return ResponseEntity.ok("User registered successfully");
-
 	}
 
 	@PostMapping("/login")

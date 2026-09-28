@@ -10,19 +10,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-	    uniqueConstraints = @UniqueConstraint(
-	        columnNames = {"city", "state", "country_code"}
-	    )
-	)
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "city", "state", "country_code" }))
 @Data
 @NoArgsConstructor
 public class City {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
 	private String city;
 	private String state;
 	private String countryCode;

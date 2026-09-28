@@ -11,22 +11,17 @@ import com.example.demo.dto.WeatherResponseDto;
 import com.example.demo.service.WeatherService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/weather")
+@RequiredArgsConstructor
 public class WeatherController {
-
 	private final WeatherService weatherService;
-
-	public WeatherController(WeatherService weatherService) {
-		this.weatherService = weatherService;
-	}
 
 	@PostMapping
 	public ResponseEntity<WeatherResponseDto> getWeather(@Valid @RequestBody WeatherRequestDto request) {
 		WeatherResponseDto weatherResponseDto = weatherService.getWeather(request);
-
 		return ResponseEntity.ok(weatherResponseDto);
 	}
-
 }

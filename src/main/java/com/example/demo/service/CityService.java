@@ -15,85 +15,46 @@ import com.example.demo.exception.CityNotFoundException;
 import com.example.demo.exception.WeatherProviderException;
 import com.example.demo.repository.CityRepository;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class CityService {
 	private final CityRepository cityRepository;
 	private final AuditService auditService;
 	private final WeatherProvider weatherProvider;
 	private final WeatherCacheService weatherCacheService;
+    private final CityPersistenceService cityPersistenceService;
 
-	public CityService(CityRepository cityRepository, AuditService auditService, WeatherProvider weatherProvider,
-			WeatherCacheService weatherCacheService) {
-		this.cityRepository = cityRepository;
-		this.auditService = auditService;
-		this.weatherProvider = weatherProvider;
-		this.weatherCacheService = weatherCacheService;
-	}
-
-	@Transactional
 	public City addCity(CityRequestDto request) {
-
 		String cityName = request.getCity().trim();
 		String state = request.getState().trim();
 		String countryCode = request.getCountryCode().trim().toUpperCase();
-
 		log.info("Adding city: {}, {}, {}", cityName, state, countryCode);
-
 		if (cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase(request.getCity(), request.getState())) {
 			log.warn("City already exists: {}", cityName);
 			throw new CityAlreadyExistsException("City ALready Exists!!!");
 		}
-
 		List<CityResponseDto> locations = weatherProvider.resolveLocation(request.getCity(), request.getCountryCode());
-
 		CityResponseDto selectedLocation = null;
-
 		for (CityResponseDto location : locations) {
-
 			if (location.getState() != null && location.getState().equalsIgnoreCase(request.getState())) {
-
 				selectedLocation = location;
 				break;
 			}
 		}
-
 		if (selectedLocation == null) {
 			log.warn("State mismatch for city: {}", cityName);
-
 			throw new WeatherProviderException("Could not find city with the given state");
 		}
-		log.info("selected city:" + selectedLocation);
-
-		City city = new City();
-
-		city.setCity(selectedLocation.getName());
-
-		city.setState(selectedLocation.getState());
-
-		city.setCountryCode(selectedLocation.getCountry());
-
-		city.setLatitude(selectedLocation.getLatitude());
-
-		city.setLongitude(selectedLocation.getLongitude());
-
-		City savedCity = cityRepository.save(city);
-
-		log.info("City added successfully: {}", savedCity.getCity());
-
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		String username = authentication.getName();
-
-		auditService.record(username, "Added city: " + savedCity.getCity());
-
-		return savedCity;
-
+		log.info("selected city: {}", selectedLocation);
+		  return cityPersistenceService.saveCityAndAudit(
+	                selectedLocation, countryCode);
 	}
-
+    
 	public List<City> getCities() {
-
 		return cityRepository.findAll();
 	}
 
@@ -102,15 +63,10 @@ public class CityService {
 		log.info("Deleting city with ID: {}", id);
 		City city = cityRepository.findById(id).orElseThrow(() -> new CityNotFoundException("City not found"));
 		cityRepository.delete(city);
-
 		log.info("City deleted successfully: {}", city.getCity());
-
 		weatherCacheService.evictWeatherCache(city.getLatitude(), city.getLongitude());
-
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String username = authentication.getName();
 		auditService.record(username, "Deleted city: " + city.getCity());
-
 	}
-
 }

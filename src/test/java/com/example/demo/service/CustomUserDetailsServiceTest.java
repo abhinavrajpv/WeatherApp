@@ -20,39 +20,29 @@ import com.example.demo.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class CustomUserDetailsServiceTest {
-
 	@Mock
 	private UserRepository userRepository;
-
 	@InjectMocks
 	private CustomUserDetailsService customUserDetailsService;
 
 	@Test
 	void loadUserByUsername_shouldReturnUserDetails() {
-
 		AppUser appUser = new AppUser();
 		appUser.setUsername("abhinav");
 		appUser.setPassword("encodedPassword");
 		appUser.setRole("USER");
-
 		when(userRepository.findByUsername("abhinav")).thenReturn(Optional.of(appUser));
-
 		UserDetails result = customUserDetailsService.loadUserByUsername("abhinav");
-
 		assertEquals("abhinav", result.getUsername());
 		assertEquals("encodedPassword", result.getPassword());
 		assertEquals("ROLE_USER", result.getAuthorities().iterator().next().getAuthority());
-
 		verify(userRepository).findByUsername("abhinav");
 	}
 
 	@Test
 	void loadUserByUsername_shouldThrowExceptionWhenUserNotFound() {
-
 		when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
-
 		assertThrows(UsernameNotFoundException.class, () -> customUserDetailsService.loadUserByUsername("unknown"));
-
 		verify(userRepository).findByUsername("unknown");
 	}
 }

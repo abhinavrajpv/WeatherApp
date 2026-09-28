@@ -21,104 +21,66 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class OpenWeatherProvider implements WeatherProvider {
-
 	private final RestClient restClient;
-
+	private final OpenWeatherUriBuilder uriBuilder;
 	@Value("${weather.api.key}")
 	private String apiKey;
 
 	@Override
 	public List<CityResponseDto> resolveLocation(String city, String countryCode) {
 		log.info("Calling weather provider for city: {}, {}", city, countryCode);
-
 		try {
-
 			CityResponseDto[] response = restClient.get()
-					.uri(uriBuilder -> uriBuilder.path("/geo/1.0/direct").queryParam("q", city + "," + countryCode)
-							.queryParam("limit", 5).queryParam("appid", apiKey).build())
+					.uri(uriBuilder -> this.uriBuilder.buildLocationUri(uriBuilder, city, countryCode, apiKey))
 					.retrieve().body(CityResponseDto[].class);
-
 			if (response == null || response.length == 0) {
-
 				throw new WeatherProviderException("Location not found");
 			}
-
 			return Arrays.asList(response);
-
 		} catch (WeatherProviderException e) {
 			log.error("Weather provider failed while finding city: {}", city);
-
 			throw e;
-
 		} catch (RestClientResponseException e) {
-
 			log.error("Weather provider returned HTTP status: {}", e.getStatusCode());
-
 			throw new WeatherProviderException("Weather provider returned an error", e);
 		} catch (RestClientException e) {
-
 			log.error("Failed to connect to weather provider");
-
 			throw new WeatherProviderException("Weather provider is unavailable", e);
 		} catch (Exception e) {
 			log.error("Weather provider failed while finding city: {}", city);
-
 			throw new WeatherProviderException("Failed to retrieve location", e);
 		}
 	}
 
 	@Override
 	public WeatherResponseDto getWeather(Double latitude, Double longitude) {
-
 		log.info("Calling weather API for coordinates: {}, {}", latitude, longitude);
-
 		try {
-
 			OpenWeatherWeatherResponseDto response = restClient.get()
-					.uri(uriBuilder -> uriBuilder.path("/data/2.5/weather").queryParam("lat", latitude)
-							.queryParam("lon", longitude).queryParam("appid", apiKey).queryParam("units", "metric")
-							.build())
+					.uri(uriBuilder -> this.uriBuilder.buildWeatherUri(uriBuilder, latitude, longitude, apiKey))
 					.retrieve().body(OpenWeatherWeatherResponseDto.class);
-
 			if (response == null) {
-
 				throw new WeatherProviderException("Weather data not received");
 			}
-
 			WeatherResponseDto weather = new WeatherResponseDto();
-
 			weather.setTemperature(response.getMain().getTemp());
-
 			weather.setHumidity(response.getMain().getHumidity());
-
 			weather.setWindSpeed(response.getWind().getSpeed());
-
 			if (response.getWeather() != null && response.getWeather().length > 0) {
-
 				weather.setWeatherCondition(response.getWeather()[0].getMain());
 			}
-
 			return weather;
-
 		} catch (WeatherProviderException e) {
 			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude);
-
 			throw e;
-
 		} catch (RestClientResponseException e) {
-
 			log.error("Weather provider returned HTTP status: {}", e.getStatusCode());
-
 			throw new WeatherProviderException("Weather provider returned an error", e);
-
 		} catch (RestClientException e) {
-
 			log.error("Failed to connect to weather provider");
-
 			throw new WeatherProviderException("Weather provider is unavailable", e);
 		} catch (Exception e) {
 			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude);
-
 			throw new WeatherProviderException("Failed to retrieve weather data", e);
 		}
 	}
