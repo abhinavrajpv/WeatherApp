@@ -17,8 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.CityRequestDto;
 import com.example.demo.entity.City;
+import com.example.demo.messages.ResponseMessages;
 import com.example.demo.service.CityService;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,9 +69,9 @@ public class CityControllerTest {
 	@Test
 	void deleteCity_shouldReturnSuccessMessage() {
 		doNothing().when(cityService).deleteCity(1L);
-		ResponseEntity<String> response = cityController.deleteCity(1L);
+		ResponseEntity<ApiResponse> response = cityController.deleteCity(1L);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertEquals("City Deleted Successfully!!", response.getBody());
+		assertEquals(ResponseMessages.CITY_DELETED, response.getBody().getMessage());
 		verify(cityService).deleteCity(1L);
 	}
 }

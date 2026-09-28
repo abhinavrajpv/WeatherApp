@@ -37,7 +37,9 @@ public class CityService {
 			log.warn("City already exists: {}", cityName);
 			throw new CityAlreadyExistsException("City ALready Exists!!!");
 		}
+		log.debug("Resolving location for city: {}, country: {}", cityName, countryCode);
 		List<CityResponseDto> locations = weatherProvider.resolveLocation(request.getCity(), request.getCountryCode());
+		log.debug("Location lookup returned {} candidates for city: {}", locations.size(), cityName);
 		CityResponseDto selectedLocation = null;
 		for (CityResponseDto location : locations) {
 			if (location.getState() != null && location.getState().equalsIgnoreCase(request.getState())) {

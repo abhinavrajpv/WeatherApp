@@ -14,10 +14,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.AuthResponseDto;
 import com.example.demo.dto.LoginRequestDto;
 import com.example.demo.dto.RefreshRequestDto;
 import com.example.demo.dto.RegisterRequestDto;
+import com.example.demo.messages.ResponseMessages;
 import com.example.demo.service.AuthService;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,9 +36,9 @@ public class AuthControllerTest {
 		request.setPassword("123456");
 		request.setRole("USER");
 		doNothing().when(authService).register(request);
-		ResponseEntity<String> response = authController.register(request);
+		ResponseEntity<ApiResponse> response = authController.register(request);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertEquals("User registered successfully", response.getBody());
+		assertEquals(ResponseMessages.USER_REGISTERED, response.getBody().getMessage());
 		verify(authService).register(request);
 	}
 
