@@ -11,6 +11,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.example.demo.messages.ResponseMessages;
+
 import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
@@ -38,8 +40,9 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<?> handleRuntimeException(RuntimeException ex) {
-		log.error("Unexpected application error: {}", ex.getMessage());
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", ex.getMessage()));
+		log.error("Unexpected application error: {}", ex);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(Map.of("error", ResponseMessages.INTERNAL_SERVER_ERROR));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -62,12 +65,12 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<?> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-		return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "City already exists"));
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ResponseMessages.DATA_INTEGRITY_ERROR));
 	}
 
 	@ExceptionHandler(DataAccessException.class)
 	public ResponseEntity<String> handleDatabaseError(DataAccessException ex) {
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body("A database error occurred. Please try again later.");
+		log.error("Database error occurred", ex);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseMessages.DATABASE_ERROR);
 	}
 }

@@ -6,10 +6,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.AuthResponseDto;
 import com.example.demo.dto.LoginRequestDto;
 import com.example.demo.dto.RefreshRequestDto;
 import com.example.demo.dto.RegisterRequestDto;
+import com.example.demo.messages.ResponseMessages;
 import com.example.demo.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -22,9 +24,9 @@ public class AuthController {
 	private final AuthService authService;
 
 	@PostMapping("/register")
-	public ResponseEntity<String> register(@Valid @RequestBody RegisterRequestDto request) {
+	public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequestDto request) {
 		authService.register(request);
-		return ResponseEntity.ok("User registered successfully");
+		return ResponseEntity.ok(new ApiResponse(ResponseMessages.USER_REGISTERED));
 	}
 
 	@PostMapping("/login")

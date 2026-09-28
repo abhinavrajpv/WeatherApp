@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.CityRequestDto;
 import com.example.demo.entity.City;
+import com.example.demo.messages.ResponseMessages;
 import com.example.demo.service.CityService;
 
 import jakarta.validation.Valid;
@@ -36,9 +38,8 @@ public class CityController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<String> deleteCity(@PathVariable Long id) {
+	public ResponseEntity<ApiResponse> deleteCity(@PathVariable Long id) {
 		cityService.deleteCity(id);
-		return ResponseEntity.ok("City Deleted Successfully!!");
+		return ResponseEntity.ok(new ApiResponse(ResponseMessages.CITY_DELETED));
 	}
-
 }

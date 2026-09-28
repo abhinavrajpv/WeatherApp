@@ -14,7 +14,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.demo.dto.ApiResponse;
+import com.example.demo.messages.ResponseMessages;
 import com.example.demo.security.JwtAuthenticationFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final ObjectMapper objectMapper;
 
 	@Bean
 	PasswordEncoder passwordEncoder() {
@@ -55,7 +59,7 @@ public class SecurityConfig {
 		return (request, response, authException) -> {
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			response.setContentType("application/json");
-			response.getWriter().write("{\"error\":\"Unauthorized\"}");
+			objectMapper.writeValue(response.getWriter(), new ApiResponse(ResponseMessages.UNAUTHORIZED));
 		};
 	}
 
@@ -64,7 +68,7 @@ public class SecurityConfig {
 		return (request, response, accessDeniedException) -> {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			response.setContentType("application/json");
-			response.getWriter().write("{\"error\":\"Access denied\"}");
+			objectMapper.writeValue(response.getWriter(), new ApiResponse(ResponseMessages.ACCESS_DENIED));
 		};
 	}
 }
