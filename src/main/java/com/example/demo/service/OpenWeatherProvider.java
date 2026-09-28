@@ -28,7 +28,6 @@ public class OpenWeatherProvider implements WeatherProvider {
 
 	@Override
 	public List<CityResponseDto> resolveLocation(String city, String countryCode) {
-		log.info("Calling weather provider for city: {}, {}", city, countryCode);
 		try {
 			CityResponseDto[] response = restClient.get()
 					.uri(uriBuilder -> this.uriBuilder.buildLocationUri(uriBuilder, city, countryCode, apiKey))
@@ -38,13 +37,13 @@ public class OpenWeatherProvider implements WeatherProvider {
 			}
 			return Arrays.asList(response);
 		} catch (WeatherProviderException e) {
-			log.error("Weather provider failed while finding city: {}", city);
+			log.error("Weather provider failed while finding city: {}", city,e);
 			throw e;
 		} catch (RestClientResponseException e) {
 			log.error("Weather provider returned HTTP status: {}", e.getStatusCode());
 			throw new WeatherProviderException("Weather provider returned an error", e);
 		} catch (RestClientException e) {
-			log.error("Failed to connect to weather provider");
+			log.error("Failed to connect to weather provider",e);
 			throw new WeatherProviderException("Weather provider is unavailable", e);
 		} catch (Exception e) {
 			log.error("Weather provider failed while finding city: {}", city);
@@ -54,7 +53,6 @@ public class OpenWeatherProvider implements WeatherProvider {
 
 	@Override
 	public WeatherResponseDto getWeather(Double latitude, Double longitude) {
-		log.info("Calling weather API for coordinates: {}, {}", latitude, longitude);
 		try {
 			OpenWeatherWeatherResponseDto response = restClient.get()
 					.uri(uriBuilder -> this.uriBuilder.buildWeatherUri(uriBuilder, latitude, longitude, apiKey))
@@ -71,13 +69,13 @@ public class OpenWeatherProvider implements WeatherProvider {
 			}
 			return weather;
 		} catch (WeatherProviderException e) {
-			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude);
+			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude,e);
 			throw e;
 		} catch (RestClientResponseException e) {
 			log.error("Weather provider returned HTTP status: {}", e.getStatusCode());
 			throw new WeatherProviderException("Weather provider returned an error", e);
 		} catch (RestClientException e) {
-			log.error("Failed to connect to weather provider");
+			log.error("Failed to connect to weather provider",e);
 			throw new WeatherProviderException("Weather provider is unavailable", e);
 		} catch (Exception e) {
 			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude);

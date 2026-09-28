@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				}
 			}
 		} catch (JwtException e) {
-			log.warn("Invalid JWT received: {}", e.getMessage());
+			log.warn("Invalid JWT received");
 		}
 		filterChain.doFilter(request, response);
 	}

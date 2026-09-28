@@ -26,7 +26,7 @@ public class CityService {
 	private final AuditService auditService;
 	private final WeatherProvider weatherProvider;
 	private final WeatherCacheService weatherCacheService;
-    private final CityPersistenceService cityPersistenceService;
+	private final CityPersistenceService cityPersistenceService;
 
 	public City addCity(CityRequestDto request) {
 		String cityName = request.getCity().trim();
@@ -49,18 +49,15 @@ public class CityService {
 			log.warn("State mismatch for city: {}", cityName);
 			throw new WeatherProviderException("Could not find city with the given state");
 		}
-		log.info("selected city: {}", selectedLocation);
-		  return cityPersistenceService.saveCityAndAudit(
-	                selectedLocation, countryCode);
+		return cityPersistenceService.saveCityAndAudit(selectedLocation, countryCode);
 	}
-    
+
 	public List<City> getCities() {
 		return cityRepository.findAll();
 	}
 
 	@Transactional
 	public void deleteCity(Long id) {
-		log.info("Deleting city with ID: {}", id);
 		City city = cityRepository.findById(id).orElseThrow(() -> new CityNotFoundException("City not found"));
 		cityRepository.delete(city);
 		log.info("City deleted successfully: {}", city.getCity());

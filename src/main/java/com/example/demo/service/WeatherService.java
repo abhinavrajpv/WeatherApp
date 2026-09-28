@@ -22,7 +22,6 @@ public class WeatherService {
 	private final AuditService auditService;
 
 	public WeatherResponseDto getWeather(WeatherRequestDto request) {
-		log.info("Weather request for city: {}", request.getCity().trim());
 		String cityName = request.getCity().trim();
 		String stateName = request.getState().trim();
 		City city = cityRepository.findByCityIgnoreCaseAndStateIgnoreCase(cityName, stateName)

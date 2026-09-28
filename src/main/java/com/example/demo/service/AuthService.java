@@ -38,7 +38,6 @@ public class AuthService {
 
 	@Transactional
 	public void register(RegisterRequestDto request) {
-		log.info("Registration attempt for username: {}", request.getUsername());
 		if (userRepository.existsByUsername(request.getUsername())) {
 			log.warn("Registration failed - username already exists: {}", request.getUsername());
 			throw new UserAlreadyExistsException("Username already exists");
@@ -53,7 +52,6 @@ public class AuthService {
 	}
 
 	public AuthResponseDto login(LoginRequestDto request) {
-		log.info("Login attempt for username: {}", request.getUsername());
 		try {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
@@ -69,7 +67,6 @@ public class AuthService {
 	}
 
 	public AuthResponseDto refresh(RefreshRequestDto request) {
-		log.info("Refresh token request received");
 		try {
 			String refreshToken = request.getRefreshToken();
 			String type = jwtService.extractTokenType(refreshToken);

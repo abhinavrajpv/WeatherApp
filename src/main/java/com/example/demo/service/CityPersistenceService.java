@@ -25,7 +25,6 @@ public class CityPersistenceService {
 		String cityName = selectedLocation.getName();
 		String state = selectedLocation.getState();
 		if (cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase(cityName, state)) {
-			log.warn("City already exists: {}", cityName);
 			throw new CityAlreadyExistsException("City already exists");
 		}
 		City city = new City();
