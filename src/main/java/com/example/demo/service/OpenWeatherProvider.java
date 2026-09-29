@@ -37,13 +37,13 @@ public class OpenWeatherProvider implements WeatherProvider {
 			}
 			return Arrays.asList(response);
 		} catch (WeatherProviderException e) {
-			log.error("Weather provider failed while finding city: {}", city,e);
+			log.error("Weather provider failed while finding city: {}", city, e);
 			throw e;
 		} catch (RestClientResponseException e) {
 			log.error("Weather provider returned HTTP status: {}", e.getStatusCode());
 			throw new WeatherProviderException("Weather provider returned an error", e);
 		} catch (RestClientException e) {
-			log.error("Failed to connect to weather provider",e);
+			log.error("Failed to connect to weather provider", e);
 			throw new WeatherProviderException("Weather provider is unavailable", e);
 		} catch (Exception e) {
 			log.error("Weather provider failed while finding city: {}", city);
@@ -69,13 +69,13 @@ public class OpenWeatherProvider implements WeatherProvider {
 			}
 			return weather;
 		} catch (WeatherProviderException e) {
-			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude,e);
+			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude, e);
 			throw e;
 		} catch (RestClientResponseException e) {
 			log.error("Weather provider returned HTTP status: {}", e.getStatusCode());
 			throw new WeatherProviderException("Weather provider returned an error", e);
 		} catch (RestClientException e) {
-			log.error("Failed to connect to weather provider",e);
+			log.error("Failed to connect to weather provider", e);
 			throw new WeatherProviderException("Weather provider is unavailable", e);
 		} catch (Exception e) {
 			log.error("Weather API failed for coordinates: {}, {}", latitude, longitude);

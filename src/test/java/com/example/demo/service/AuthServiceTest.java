@@ -83,7 +83,7 @@ public class AuthServiceTest {
 		LoginRequestDto request = new LoginRequestDto();
 		request.setUsername("testuser");
 		request.setPassword("password");
-		UserDetails userDetails = User.withUsername("testuser").password("encodedpassword").roles("User").build();
+		UserDetails userDetails = User.withUsername("testuser").password("encodedpassword").roles("USER").build();
 		Authentication authentication = mock(Authentication.class);
 		when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
 				.thenReturn(authentication);
@@ -93,6 +93,7 @@ public class AuthServiceTest {
 		AuthResponseDto result = authService.login(request);
 		assertEquals("access-token", result.getAccessToken());
 		assertEquals("refresh-token", result.getRefreshToken());
+		assertEquals("USER", result.getRole());
 	}
 
 	@Test
@@ -118,6 +119,7 @@ public class AuthServiceTest {
 		AuthResponseDto result = authService.refresh(request);
 		assertEquals("new-access-token", result.getAccessToken());
 		assertEquals("refresh-token", result.getRefreshToken());
+		assertEquals("USER", result.getRole());
 		verify(jwtService).generateAccessToken(userDetails);
 	}
 

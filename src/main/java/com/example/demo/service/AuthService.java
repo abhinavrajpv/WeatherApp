@@ -59,7 +59,9 @@ public class AuthService {
 			String accessToken = jwtService.generateAccessToken(userDetails);
 			String refreshToken = jwtService.generateRefreshToken(userDetails);
 			log.info("Login successful for username: {}", userDetails.getUsername());
-			return new AuthResponseDto(accessToken, refreshToken);
+			String role = userDetails.getAuthorities().stream().findFirst().orElseThrow().getAuthority()
+					.replace("ROLE_", "");
+			return new AuthResponseDto(accessToken, refreshToken, role);
 		} catch (AuthenticationException ex) {
 			log.warn("Login failed for username: {}", request.getUsername());
 			throw new InvalidCredentialsException("Invalid username or password");
@@ -82,7 +84,9 @@ public class AuthService {
 			}
 			String newAccessToken = jwtService.generateAccessToken(userDetails);
 			log.info("Access token refreshed successfully for username: {}", username);
-			return new AuthResponseDto(newAccessToken, refreshToken);
+			String role = userDetails.getAuthorities().stream().findFirst().orElseThrow().getAuthority()
+					.replace("ROLE_", "");
+			return new AuthResponseDto(newAccessToken, refreshToken,role);
 		} catch (JwtException ex) {
 			log.warn("Invalid refresh token: {}", ex.getMessage());
 			throw new InvalidRefreshTokenException("Invalid refresh token");

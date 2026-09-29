@@ -47,7 +47,7 @@ public class AuthControllerTest {
 		LoginRequestDto request = new LoginRequestDto();
 		request.setUsername("testuser");
 		request.setPassword("123456");
-		AuthResponseDto expected = new AuthResponseDto("access-token", "refresh-token");
+		AuthResponseDto expected =new AuthResponseDto("access-token", "refresh-token", "USER");
 		when(authService.login(request)).thenReturn(expected);
 		ResponseEntity<AuthResponseDto> response = authController.login(request);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -59,7 +59,7 @@ public class AuthControllerTest {
 	void refreshTest() {
 		RefreshRequestDto request = new RefreshRequestDto();
 		request.setRefreshToken("refresh-token");
-		AuthResponseDto expected = new AuthResponseDto("new-access-token", "refresh-token");
+		AuthResponseDto expected =new AuthResponseDto("new-access-token", "refresh-token", "USER");
 		when(authService.refresh(request)).thenReturn(expected);
 		ResponseEntity<AuthResponseDto> response = authController.refresh(request);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
