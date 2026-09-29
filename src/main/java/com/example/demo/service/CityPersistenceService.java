@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.CityResponseDto;
 import com.example.demo.entity.City;
-import com.example.demo.exception.CityAlreadyExistsException;
 import com.example.demo.repository.CityRepository;
 
 import lombok.RequiredArgsConstructor;
