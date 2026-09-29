@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.List;
 import java.util.function.Function;
 
@@ -15,9 +16,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriBuilder;
 
 import com.example.demo.dto.CityResponseDto;
 import com.example.demo.dto.MainData;
@@ -40,8 +44,14 @@ public class OpenWeatherProviderTest {
 	@BeforeEach
 	void setUp() {
 		provider = new OpenWeatherProvider(restClient, new OpenWeatherUriBuilder());
+		ReflectionTestUtils.setField(provider, "apiKey", "test-api-key");
 		when(restClient.get()).thenReturn(requestSpec);
-		when(requestSpec.uri(any(Function.class))).thenReturn(requestSpec);
+		// when(requestSpec.uri(any(Function.class))).thenReturn(requestSpec);
+		when(requestSpec.uri(any(Function.class))).thenAnswer(invocation -> {
+			Function<UriBuilder, URI> uriFunction = invocation.getArgument(0);
+			uriFunction.apply(new DefaultUriBuilderFactory().builder());
+			return requestSpec;
+		});
 		when(requestSpec.retrieve()).thenReturn(responseSpec);
 	}
 
@@ -147,5 +157,22 @@ public class OpenWeatherProviderTest {
 		when(responseSpec.body(OpenWeatherWeatherResponseDto.class))
 				.thenThrow(new IllegalStateException("Unexpected error"));
 		assertThrows(WeatherProviderException.class, () -> provider.getWeather(12.9716, 77.5946));
+	}
+
+	@Test
+	void shouldHandleEmptyWeatherArray() {
+		OpenWeatherWeatherResponseDto response = new OpenWeatherWeatherResponseDto();
+		MainData main = new MainData();
+		main.setTemp(25.0);
+		main.setHumidity(60);
+		response.setMain(main);
+		WindData wind = new WindData();
+		wind.setSpeed(3.5);
+		response.setWind(wind);
+		response.setWeather(new WeatherData[0]);
+		when(responseSpec.body(OpenWeatherWeatherResponseDto.class)).thenReturn(response);
+		WeatherResponseDto result = provider.getWeather(12.9716, 77.5946);
+		assertNotNull(result);
+		assertEquals(null, result.getWeatherCondition());
 	}
 }

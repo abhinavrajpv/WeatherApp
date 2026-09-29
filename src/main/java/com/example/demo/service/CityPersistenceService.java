@@ -24,9 +24,6 @@ public class CityPersistenceService {
 	public City saveCityAndAudit(CityResponseDto selectedLocation, String countryCode) {
 		String cityName = selectedLocation.getName();
 		String state = selectedLocation.getState();
-		if (cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase(cityName, state)) {
-			throw new CityAlreadyExistsException("City already exists");
-		}
 		City city = new City();
 		city.setCity(cityName);
 		city.setState(state);

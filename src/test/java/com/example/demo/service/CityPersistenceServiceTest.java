@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.example.demo.dto.CityResponseDto;
 import com.example.demo.entity.City;
-import com.example.demo.exception.CityAlreadyExistsException;
 import com.example.demo.repository.CityRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,7 +59,6 @@ public class CityPersistenceServiceTest {
 		savedCity.setCountryCode("IN");
 		savedCity.setLatitude(12.97);
 		savedCity.setLongitude(77.59);
-		when(cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase("Bengaluru", "Karnataka")).thenReturn(false);
 		when(cityRepository.save(any(City.class))).thenReturn(savedCity);
 		City result = cityPersistenceService.saveCityAndAudit(location, "IN");
 		assertEquals("Bengaluru", result.getCity());
@@ -71,18 +68,6 @@ public class CityPersistenceServiceTest {
 		assertEquals(77.59, result.getLongitude());
 		verify(cityRepository).save(any(City.class));
 		verify(auditService).record("testuser", "Added city: Bengaluru");
-	}
-
-	@Test
-	void shouldThrowExceptionWhenCityAlreadyExists() {
-		CityResponseDto location = new CityResponseDto();
-		location.setName("Bengaluru");
-		location.setState("Karnataka");
-		location.setCountry("IN");
-		when(cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase("Bengaluru", "Karnataka")).thenReturn(true);
-		assertThrows(CityAlreadyExistsException.class, () -> cityPersistenceService.saveCityAndAudit(location, "IN"));
-		verify(cityRepository, never()).save(any(City.class));
-		verify(auditService, never()).record(any(), any());
 	}
 
 	@Test
@@ -96,7 +81,6 @@ public class CityPersistenceServiceTest {
 		City savedCity = new City();
 		savedCity.setId(1L);
 		savedCity.setCity("Bengaluru");
-		when(cityRepository.existsByCityIgnoreCaseAndStateIgnoreCase("Bengaluru", "Karnataka")).thenReturn(false);
 		when(cityRepository.save(any(City.class))).thenReturn(savedCity);
 		doThrow(new RuntimeException("Audit save failed")).when(auditService).record("testuser",
 				"Added city: Bengaluru");

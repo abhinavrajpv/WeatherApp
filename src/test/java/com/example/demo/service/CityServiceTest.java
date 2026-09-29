@@ -153,4 +153,38 @@ class CityServiceTest {
 		verify(cityRepository, never()).delete(any(City.class));
 		verify(weatherCacheService, never()).evictWeatherCache(anyDouble(), anyDouble());
 	}
+	
+
+	private CityRequestDto request(String city, String state, String countryCode) {
+		CityRequestDto request = new CityRequestDto();
+		request.setCity(city);
+		request.setState(state);
+		request.setCountryCode(countryCode);
+		return request;
+	}
+ 
+	private CityResponseDto location(String name, String state, Double latitude, Double longitude) {
+		CityResponseDto location = new CityResponseDto();
+		location.setName(name);
+		location.setState(state);
+		location.setCountry("IN");
+		location.setLatitude(latitude);
+		location.setLongitude(longitude);
+		return location;
+	}
+
+	@Test
+	void shouldSkipCandidatesWithNullOrDifferentStateAndPickMatchingOne() {
+		CityResponseDto nullState = location("Bengaluru", null, 1.0, 1.0);
+		CityResponseDto otherState = location("Bengaluru", "Kerala", 2.0, 2.0);
+		CityResponseDto matching = location("Bengaluru", "Karnataka", 12.97, 77.59);
+		City savedCity = new City();
+		savedCity.setCity("Bengaluru");
+		when(weatherProvider.resolveLocation("Bengaluru", "IN")).thenReturn(List.of(nullState, otherState, matching));
+		when(cityPersistenceService.saveCityAndAudit(matching, "IN")).thenReturn(savedCity);
+		City result = cityService.addCity(request("Bengaluru", "Karnataka", "IN"));
+		assertEquals(savedCity, result);
+		verify(cityPersistenceService).saveCityAndAudit(matching, "IN");
+	}
+ 
 }
