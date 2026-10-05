@@ -2,9 +2,12 @@ package com.example.demo.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +50,7 @@ public class AuthControllerTest {
 		LoginRequestDto request = new LoginRequestDto();
 		request.setUsername("testuser");
 		request.setPassword("123456");
-		AuthResponseDto expected =new AuthResponseDto("access-token", "refresh-token", "USER");
+		AuthResponseDto expected = new AuthResponseDto("access-token", "refresh-token", "USER");
 		when(authService.login(request)).thenReturn(expected);
 		ResponseEntity<AuthResponseDto> response = authController.login(request);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -59,11 +62,24 @@ public class AuthControllerTest {
 	void refreshTest() {
 		RefreshRequestDto request = new RefreshRequestDto();
 		request.setRefreshToken("refresh-token");
-		AuthResponseDto expected =new AuthResponseDto("new-access-token", "refresh-token", "USER");
+		AuthResponseDto expected = new AuthResponseDto("new-access-token", "refresh-token", "USER");
 		when(authService.refresh(request)).thenReturn(expected);
 		ResponseEntity<AuthResponseDto> response = authController.refresh(request);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertSame(expected, response.getBody());
 		verify(authService).refresh(request);
+	}
+
+	@Test
+	void tokenTest() {
+		AuthResponseDto expected = new AuthResponseDto("access-token", "refresh-token", "USER");
+		when(authService.login(any(LoginRequestDto.class))).thenReturn(expected);
+		ResponseEntity<Map<String, Object>> response = authController.token("testuser", "123456");
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals("access-token", response.getBody().get("access_token"));
+		assertEquals("bearer", response.getBody().get("token_type"));
+
+		verify(authService).login(any(LoginRequestDto.class));
 	}
 }

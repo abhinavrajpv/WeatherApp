@@ -1,9 +1,12 @@
 package com.example.demo.controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponse;
@@ -37,5 +40,16 @@ public class AuthController {
 	@PostMapping("/refresh")
 	public ResponseEntity<AuthResponseDto> refresh(@RequestBody RefreshRequestDto request) {
 		return ResponseEntity.ok(authService.refresh(request));
+	}
+
+	@PostMapping("/token")
+	public ResponseEntity<Map<String, Object>> token(@RequestParam String username, @RequestParam String password) {
+		LoginRequestDto request = new LoginRequestDto();
+		request.setUsername(username);
+		request.setPassword(password);
+		AuthResponseDto response = authService.login(request);
+
+		return ResponseEntity.ok(Map.of("access_token", response.getAccessToken(), "token_type", "bearer"));
+
 	}
 }

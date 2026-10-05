@@ -42,7 +42,7 @@ public class CityService {
 		log.debug("Location lookup returned {} candidates for city: {}", locations.size(), cityName);
 		CityResponseDto selectedLocation = null;
 		for (CityResponseDto location : locations) {
-			if (location.getState() != null && location.getState().equalsIgnoreCase(request.getState())) {
+			if (location.getState() != null && location.getState().equalsIgnoreCase(state)) {
 				selectedLocation = location;
 				break;
 			}
