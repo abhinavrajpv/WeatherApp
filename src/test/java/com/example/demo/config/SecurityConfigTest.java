@@ -7,15 +7,19 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
@@ -83,9 +87,30 @@ class SecurityConfigTest {
 		assertEquals("application/json", response.getContentType());
 	}
 
-	@Test
-	void adminCanCreateCity() throws Exception {
-		mockMvc.perform(post("/cities").with(user("admin").roles("ADMIN"))).andExpect(status().isNotFound());
+	/*
+	 * @Test void adminCanCreateCity() throws Exception {
+	 * mockMvc.perform(post("/cities").with(user("admin").roles("ADMIN"))).andExpect
+	 * (status().isNotFound()); }
+	 */
+
+	/*
+	 * @Test void userCanGetCities() throws Exception {
+	 * mockMvc.perform(get("/cities").with(user("user").roles("USER"))).andExpect(
+	 * status().isNotFound()); }
+	 */
+
+	/*
+	 * @Test void adminCanDeleteCity() throws Exception {
+	 * mockMvc.perform(delete("/cities/1").with(user("admin").roles("ADMIN"))).
+	 * andExpect(status().isNotFound()); }
+	 */
+
+	@ParameterizedTest
+	@CsvSource({ "POST, /cities, ADMIN", "GET, /cities, USER", "DELETE, /cities/1, ADMIN" })
+	void authorizedRequestsPassSecurity(String method, String path, String role) throws Exception {
+
+		mockMvc.perform(request(HttpMethod.valueOf(method), path).with(user("test").roles(role)))
+				.andExpect(status().isNotFound());
 	}
 
 	@Test
@@ -94,18 +119,8 @@ class SecurityConfigTest {
 	}
 
 	@Test
-	void userCanGetCities() throws Exception {
-		mockMvc.perform(get("/cities").with(user("user").roles("USER"))).andExpect(status().isNotFound());
-	}
-
-	@Test
 	void unauthenticatedUserCannotGetCities() throws Exception {
 		mockMvc.perform(get("/cities")).andExpect(status().isUnauthorized());
-	}
-
-	@Test
-	void adminCanDeleteCity() throws Exception {
-		mockMvc.perform(delete("/cities/1").with(user("admin").roles("ADMIN"))).andExpect(status().isNotFound());
 	}
 
 	@Test
